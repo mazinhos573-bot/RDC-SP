@@ -21,7 +21,7 @@
             color: #1e2937;
         }
         .header { 
-            background: linear-gradient(0deg, var(--primary), #0056cf); 
+            background: linear-gradient(0deg, var(--accent), #0056cf); 
             color: white; 
             padding: 30px 20px; 
             text-align: center; 
@@ -156,6 +156,9 @@
             flex: 1; 
             min-width: 300px; 
         }
+        .chart-card canvas { height: 260px !important; }
+        /* Slightly larger pie chart for better readability */
+        #pieChart { height: 220px !important; max-width: 420px; }
         
         .history-log {
             margin-top: 30px;
@@ -211,7 +214,7 @@
                 <p class="total" id="card-consolidacao">0</p>
             </div>
             <div class="card">
-                <h3>Total Expedido - 总计发货</h3>
+                <h3>Total Expedido - 总发行量</h3>
                 <p class="total" id="total-expedido">0</p>
             </div>
         </div>
@@ -238,11 +241,11 @@
         <h3 style="margin-top: 40px;">Análise Gráfica - 图形分析</h3>
         <div class="charts-container">
             <div class="chart-card">
-                <h4>Distribuição dos Recebimentos - 收到的分布</h4>
+                <h4>Distribuição dos Recebimentos - 收入分配</h4>
                 <canvas id="pieChart"></canvas>
             </div>
             <div class="chart-card">
-                <h4>Recebido - 收到 × Consolidação - 合并  × Expedido - 发货</h4>
+                <h4>Recebido - 已收到 × Consolidação - 合并  × Expedido - 发布</h4>
                 <canvas id="barChart"></canvas>
             </div>
         </div>
@@ -250,7 +253,7 @@
 
     <!-- Lançamentos -->
     <div id="tab1" class="content">
-        <h2>Lançamento Manual de Dados - 手动数据录入</h2>
+        <h2>Lançamento Manual de Dados - 人工数据录入</h2>
         <div class="form-grid">
             <div class="form-group">
                 <label>SP2:</label>
@@ -288,7 +291,7 @@
             <span id="log-content">Nenhuma atividade registrada - 未记录到活动.</span>
         </div>
 
-        <h3 style="margin-top: 40px;">Valores Atuais Registrados - 当前注册值</h3>
+        <h3 style="margin-top: 40px;">Valores Atuais Registrados - 当前记录值</h3>
         <div class="table-container">
             <table id="info-table">
                 <thead>
@@ -306,6 +309,29 @@
         // Variáveis globais para os gráficos
         let pieChart = null;
         let barChart = null;
+
+        // Plugin para desenhar valores acima das barras
+        const barValuePlugin = {
+            id: 'barValuePlugin',
+            afterDatasetsDraw(chart) {
+                const ctx = chart.ctx;
+                chart.data.datasets.forEach((dataset, datasetIndex) => {
+                    const meta = chart.getDatasetMeta(datasetIndex);
+                    meta.data.forEach((bar, index) => {
+                        const value = dataset.data[index];
+                        if (value == null) return;
+                        ctx.fillStyle = '#111827';
+                        ctx.font = '12px system-ui, Arial';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'bottom';
+                        const x = bar.x;
+                        const y = bar.y - 6;
+                        ctx.fillText(value.toLocaleString('pt-BR'), x, y);
+                    });
+                });
+            }
+        };
+        Chart.register(barValuePlugin);
 
         // Recupera dados do localStorage ou inicia padrão
         let data = JSON.parse(localStorage.getItem('rdc_data')) || { 
@@ -381,8 +407,8 @@
                 <tr><td>SP0</td><td>${data.sp0}</td></tr>
                 <tr><td>Outros - 其他的</td><td>${data.outros}</td></tr>
                 <tr><td><strong>Consolidação - 合并</strong></td><td><strong>${data.consolidacao}</strong></td></tr>
-                <tr><td><strong>Total Recebido - 收到</strong></td><td><strong>${totalRecebido}</strong></td></tr>
-                <tr><td><strong>Total Expedido - 发货</strong></td><td><strong>${data.expedido}</strong></td></tr>
+                <tr><td><strong>Total Recebido - 总计收到</strong></td><td><strong>${totalRecebido}</strong></td></tr>
+                <tr><td><strong>Total Expedido - 总发行量</strong></td><td><strong>${data.expedido}</strong></td></tr>
             `;
 
             updateCharts(totalRecebido);
@@ -446,16 +472,22 @@
             doc.text(`Gerado em: ${date}`, 20, 48);
 
             doc.setTextColor(0, 0, 0);
-            doc.setFontSize(14);
+            doc.setFontSize(16);
             doc.text("1. Resumo Executivo", 20, 65);
+            // Resumo em caixa
+            const boxX = 20; const boxY = 72; const boxW = 170; const boxH = 46;
+            doc.setFillColor(245, 245, 245);
+            doc.rect(boxX, boxY, boxW, boxH, 'F');
             doc.setFontSize(12);
-            doc.text(`Total de Cargas Recebidas: ${totalRecebido}`, 25, 75);
-            doc.text(`Volume em Consolidação: ${data.consolidacao}`, 25, 83);
-            doc.text(`Total de Cargas Expedidas: ${data.expedido}`, 25, 91);
+            const line1Y = boxY + 12;
+            const lineGap = 10;
+            doc.text(`Total de Cargas Recebidas: ${totalRecebido.toLocaleString('pt-BR')}`, boxX + 5, line1Y + 0);
+            doc.text(`Consolidação: ${data.consolidacao.toLocaleString('pt-BR')}`, boxX + 5, line1Y + lineGap);
+            doc.text(`Total Expedidas: ${data.expedido.toLocaleString('pt-BR')}`, boxX + 5, line1Y + lineGap * 2);
 
             doc.setFontSize(14);
-            doc.text("2. Detalhamento por Esteira (Recebimento)", 20, 110);
-            let y = 120;
+            doc.text("2. Detalhamento por Esteira (Recebimento)", 20, boxY + boxH + 18);
+            let y = boxY + boxH + 28;
             const categorias = [
                 {l: 'SP2 (Primeira Esteira)', v: data.sp2},
                 {l: 'SP9 (Segunda Esteira)', v: data.sp9},
@@ -464,9 +496,27 @@
             ];
 
             categorias.forEach((item) => {
-                doc.text(`${item.l}: ${item.v}`, 25, y);
-                y += 10;
+                // Label à esquerda, valor alinhado à direita da área de conteúdo
+                doc.setFontSize(12);
+                doc.text(item.l, 25, y);
+                doc.text(item.v.toLocaleString('pt-BR'), 185, y, { align: 'right' });
+                y += 8;
             });
+
+            // Inserir imagens dos gráficos (se existirem) com dimensões maiores
+            try {
+                let imgY = y + 8;
+                if (pieChart) {
+                    const pieImg = pieChart.toBase64Image();
+                    doc.addImage(pieImg, 'PNG', 20, imgY, 90, 70);
+                }
+                if (barChart) {
+                    const barImg = barChart.toBase64Image();
+                    doc.addImage(barImg, 'PNG', 120, imgY, 90, 70);
+                }
+            } catch (e) {
+                console.warn('Erro ao inserir imagem do gráfico no PDF:', e);
+            }
 
             doc.setFontSize(10);
             doc.text("Documento oficial para fins de auditoria interna.", 20, 280);
