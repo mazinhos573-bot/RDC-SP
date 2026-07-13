@@ -454,13 +454,13 @@
             doc.text(`Total de Cargas Expedidas: ${data.expedido}`, 25, 91);
 
             doc.setFontSize(14);
-            doc.text("2. Detalhamento por Regional (Recebimento)", 20, 110);
+            doc.text("2. Detalhamento por Esteira (Recebimento)", 20, 110);
             let y = 120;
             const categorias = [
-                {l: 'SP2 (Regional Principal)', v: data.sp2},
-                {l: 'SP9 (Regional Secundária)', v: data.sp9},
-                {l: 'SP0 (Regional Operacional)', v: data.sp0},
-                {l: 'Outras Origens', v: data.outros}
+                {l: 'SP2 (Primeira Esteira)', v: data.sp2},
+                {l: 'SP9 (Segunda Esteira)', v: data.sp9},
+                {l: 'SP0 (Terceira Esteira)', v: data.sp0},
+                {l: 'Outras', v: data.outros}
             ];
 
             categorias.forEach((item) => {
