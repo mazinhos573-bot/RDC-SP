@@ -218,6 +218,18 @@
                 <p class="total" id="total-expedido">0</p>
             </div>
         </div>
+        <h3 style="margin-top: 40px;">Análise Gráfica - 图形分析</h3>
+<div class="charts-container">
+            <div class="chart-card">
+                <h4>Distribuição dos Recebimentos - 收入分配</h4>
+                <canvas id="pieChart" width="544" height="545" style="display: block; box-sizing: border-box; height: 363px; width: 363px;"></canvas>
+            </div>
+            <div class="chart-card">
+                <h4>Recebido - 已收到 × Consolidação - 合并  × Expedido - 发布</h4>
+                <canvas id="barChart" width="970" height="485" style="display: block; box-sizing: border-box; height: 323px; width: 647px;"></canvas>
+            </div>
+        </div>
+
 
         <h3>Detalhamento por Categoria - 按类别细分</h3>
         <div class="table-container">
@@ -233,23 +245,15 @@
             </table>
         </div>
 
+
         <div class="actions" style="margin-top: 25px;">
             <button onclick="generatePDF()">📄 Gerar Relatório PDF - 生成 PDF 报告</button>
             <button onclick="exportToCSV()" class="secondary-btn">Excel / CSV</button>
         </div>
 
-        <h3 style="margin-top: 40px;">Análise Gráfica - 图形分析</h3>
-        <div class="charts-container">
-            <div class="chart-card">
-                <h4>Distribuição dos Recebimentos - 收入分配</h4>
-                <canvas id="pieChart"></canvas>
-            </div>
-            <div class="chart-card">
-                <h4>Recebido - 已收到 × Consolidação - 合并  × Expedido - 发布</h4>
-                <canvas id="barChart"></canvas>
-            </div>
-        </div>
+        
     </div>
+    
 
     <!-- Lançamentos -->
     <div id="tab1" class="content">
